@@ -1,0 +1,23 @@
+{
+  "name": "SalaDaPaula",
+  "currentTask": "Task 1",
+  "moderator": "Paula",
+  "players": [
+    {
+      "name": "Paula",
+      "point": "3"
+    },
+    {
+      "name": "Alisson",
+      "point": "34"
+    },
+    {
+      "name": "UltimoPlayer",
+      "point": "?"
+    },
+    {
+      "name": "UltimoDosMoicanos",
+      "point": "?"
+    }
+  ]
+}
