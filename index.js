@@ -1,7 +1,9 @@
 const express = require("express");
 const path = require("path");
 const bodyParser = require("body-parser");
-const port = process.env.PORT || 5005;
+const { PrismaClient } = require('@prisma/client')
+const port = process.env.PORT || 5006;
+const prisma = new PrismaClient()
 
 const app = express();
 app.use(bodyParser.json());
@@ -15,7 +17,7 @@ app.get("/", (req, res) => {
 });
 
 // CREATE ROOM #TODO = Add to database
-app.post("/create-room", (req, res) => {
+app.post("/create-room", async (req, res) => {
   const roomName = req.query.room;
   const moderator = req.query.moderator;
 
@@ -41,6 +43,14 @@ app.post("/create-room", (req, res) => {
       },
     ],
   };
+
+  await prisma.rooms.create({
+    data: {
+      moderator: 'breno',
+      room: 'web-1',
+      currentTask: '3'
+    }
+  })
 
   res.status(200).send(room);
 });
@@ -108,6 +118,37 @@ app.post("/join-room", (req, res) => {
 
 // POST REMOVE PLAYER #TODO = Add to database
 app.post("/remove-player", (req, res) => {
+  const roomName = req.query.room;
+  const player = req.query.player;
+
+  if (!roomName) {
+    return res
+      .status(400)
+      .send({ message: "Missing required fields: room" });
+  }
+
+  if (!player) {
+    return res
+      .status(400)
+      .send({ message: "Missing required fields: player" });
+  }
+
+  const room = {
+    name: roomName,
+    currentTask: "Task 1",
+    moderator: "moderator",
+    players: [
+      {
+        name: "player",
+        point: "?",
+      }
+    ],
+  };
+
+  res.status(200).send(room);
+});
+
+app.post("/sendvote", (req, res) => {
   const roomName = req.query.room;
   const player = req.query.player;
 
