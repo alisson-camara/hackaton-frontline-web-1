@@ -6,7 +6,7 @@ const port = process.env.PORT || 5006;
 const prisma = new PrismaClient();
 
 const app = express();
-app.use(bodyParser.json());
+app.use(bodyParser.json( { strict: false } ));
 
 app.use(express.static(path.join(__dirname, "public")));
 app.set("views", path.join(__dirname, "views"));
@@ -165,13 +165,14 @@ app.post("/remove-player", async (req, res) => {
 app.post("/sendvote",  async (req, res) => {
   const roomName = req.query.room;
   const player = req.query.player;
-  const point = req.body.point;
+  const point = req.body;
 
   if (!roomName || !player) {
     const missingField = !roomName ? 'room' : 'player'
     return res.status(400).send({ message: `Missing required fields: ${missingField}` });
   }
 
+  console.log(point);
   if (!point) {
     return res.status(400).send({ message: "Missing required body as point" });
   }
@@ -179,22 +180,25 @@ app.post("/sendvote",  async (req, res) => {
   const room = await prisma.rooms.findFirst({
     where: {
       room: roomName,
-    },
-    select:{player}
-  });
-  
-  console.log(room);
-  const playerWithNewVote = room.players.map((player) => {
-    if (player.name === player) {
-      return {
-        ...player,
-        point
-      }
     }
   });
+  
+  if (!room) {
+    return res.status(404).send({ message: "Room not found" });
+  }
+  
+  const playerWithNewVote = room.players.map((p) => {
+    if (p.name === player) {
+      return {
+        name: p.name,
+        point: point.toString(),
+      }
+    }
+    return player;
+  });
+  console.log('playerWithNewVote', playerWithNewVote)
 
-  // TODO: Update point of body
-  await prisma.rooms.updateOne({
+  await prisma.rooms.updateMany({
     where: {
       room: roomName,
     },
@@ -207,7 +211,7 @@ app.post("/sendvote",  async (req, res) => {
 });
 
 // POST RESET VOTES #TODO = Add to database
-app.post("/reset-votes", (req, res) => {
+app.post("/reset-votes", async (req, res) => {
   const roomName = req.query.room;
   const player = req.query.player;
 
@@ -219,17 +223,15 @@ app.post("/reset-votes", (req, res) => {
     return res.status(400).send({ message: "Missing required fields: player" });
   }
 
-  const room = {
-    name: roomName,
-    currentTask: "Task 1",
-    moderator: "moderator",
-    players: [
-      {
-        name: "player",
-        point: "?",
-      },
-    ],
-  };
+  const room = await prisma.rooms.findFirst({
+    where: {
+      room: roomName,
+    }
+  });
+  
+  if (!room) {
+    return res.status(404).send({ message: "Room not found" });
+  }
 
   room.players.map((currentPlayer) => {
     if (currentPlayer === player)
