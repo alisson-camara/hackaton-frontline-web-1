@@ -6,7 +6,7 @@ const port = process.env.PORT || 5006;
 const prisma = new PrismaClient();
 
 const app = express();
-app.use(bodyParser.json( { strict: false } ));
+app.use(bodyParser.json({ strict: false }));
 
 app.use(express.static(path.join(__dirname, "public")));
 app.set("views", path.join(__dirname, "views"));
@@ -118,7 +118,7 @@ app.post("/join-room", async (req, res) => {
 app.post("/remove-player", async (req, res) => {
   const roomName = req.query.room;
   const player = req.query.player;
-  const bodyPlayer = req.body
+  const bodyPlayer = req.body;
 
   if (!roomName) {
     return res.status(400).send({ message: "Missing required fields: room" });
@@ -129,7 +129,9 @@ app.post("/remove-player", async (req, res) => {
   }
 
   if (!bodyPlayer) {
-    return res.status(400).send({ message: "Missing required body as player name" });
+    return res
+      .status(400)
+      .send({ message: "Missing required body as player name" });
   }
 
   const room = await prisma.rooms.findFirst({
@@ -162,14 +164,16 @@ app.post("/remove-player", async (req, res) => {
   res.status(200).send(updatedRoom);
 });
 
-app.post("/sendvote",  async (req, res) => {
+app.post("/sendvote", async (req, res) => {
   const roomName = req.query.room;
   const player = req.query.player;
   const point = req.body;
 
   if (!roomName || !player) {
-    const missingField = !roomName ? 'room' : 'player'
-    return res.status(400).send({ message: `Missing required fields: ${missingField}` });
+    const missingField = !roomName ? "room" : "player";
+    return res
+      .status(400)
+      .send({ message: `Missing required fields: ${missingField}` });
   }
 
   console.log(point);
@@ -180,25 +184,25 @@ app.post("/sendvote",  async (req, res) => {
   const room = await prisma.rooms.findFirst({
     where: {
       room: roomName,
-    }
+    },
   });
-  
+
   if (!room) {
     return res.status(404).send({ message: "Room not found" });
   }
-  
+
   const playerWithNewVote = room.players.map((p) => {
     if (p.name === player) {
       return {
         name: p.name,
         point: point.toString(),
-      }
+      };
     }
     return player;
   });
-  console.log('playerWithNewVote', playerWithNewVote)
+  console.log("playerWithNewVote", playerWithNewVote);
 
-  await prisma.rooms.updateMany({
+  const newRoom = await prisma.rooms.updateMany({
     where: {
       room: roomName,
     },
@@ -207,7 +211,7 @@ app.post("/sendvote",  async (req, res) => {
     },
   });
 
-  res.status(200).send(room);
+  res.status(200).send(newRoom);
 });
 
 // POST RESET VOTES #TODO = Add to database
@@ -226,15 +230,15 @@ app.post("/reset-votes", async (req, res) => {
   const room = await prisma.rooms.findFirst({
     where: {
       room: roomName,
-    }
+    },
   });
-  
+
   if (!room) {
     return res.status(404).send({ message: "Room not found" });
   }
 
-  room.players.map((currentPlayer) => {
-    if (currentPlayer === player)
+  const newPlayersVote = room.players.map((currentPlayer) => {
+    if (currentPlayer.name === player)
       return {
         ...currentPlayer,
         point: "?",
@@ -242,7 +246,16 @@ app.post("/reset-votes", async (req, res) => {
     return currentPlayer;
   });
 
-  res.status(200).send(room);
+  const newRoom = await prisma.rooms.updateMany({
+    where: {
+      room: roomName,
+    },
+    data: {
+      players: newPlayersVote,
+    },
+  });
+
+  res.status(200).send(newRoom);
 });
 
 const server = app.listen(port, () => {
