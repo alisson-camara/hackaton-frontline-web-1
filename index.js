@@ -45,11 +45,7 @@ app.post("/create-room", async (req, res) => {
   };
 
   await prisma.rooms.create({
-    data: {
-      moderator: 'breno',
-      room: 'web-1',
-      currentTask: '3'
-    }
+    data: room
   })
 
   res.status(200).send(room);

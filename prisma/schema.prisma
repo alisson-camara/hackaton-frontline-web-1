@@ -13,4 +13,5 @@ model rooms {
   moderator String
   room String
   currentTask String
+  players 
 }
