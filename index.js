@@ -33,7 +33,7 @@ app.post("/create-room", async (req, res) => {
   }
 
   const room = {
-    name: roomName,
+    room: roomName,
     currentTask: "Task 1",
     moderator: moderator,
     players: [
@@ -52,7 +52,7 @@ app.post("/create-room", async (req, res) => {
 });
 
 // GET ROOM #TODO = Add to database
-app.get("/room", (req, res) => {
+app.get("/room", async (req, res) => {
   const roomName = req.query.room;
 
   if (!roomName) {
@@ -61,23 +61,17 @@ app.get("/room", (req, res) => {
       .send({ message: "Missing required fields: room" });
   }
 
-  const room = {
-    name: roomName,
-    currentTask: "Task 1",
-    moderator: "moderator",
-    players: [
-      {
-        name: "player",
-        point: "?",
-      },
-    ],
-  };
+  const rooms = await prisma.rooms.findFirst({
+    where: {
+      room: roomName,
+    },
+  })
 
-  res.status(200).send(room);
+  res.status(200).send(rooms);
 });
 
 // POST JOIN ROOM #TODO = Add to database
-app.post("/join-room", (req, res) => {
+app.post("/join-room", async (req, res) => {
   const roomName = req.query.room;
   const player = req.query.player;
 
@@ -93,23 +87,35 @@ app.post("/join-room", (req, res) => {
       .send({ message: "Missing required fields: player" });
   }
 
-  const room = {
-    name: roomName,
-    currentTask: "Task 1",
-    moderator: "moderator",
-    players: [
-      {
-        name: "player",
-        point: "?",
-      },
-      {
-        name: player,
-        point: '?'
-      }
-    ],
-  };
+  const rooms = await prisma.rooms.findFirst({
+    where: {
+      room: roomName,
+    },
+  })
 
-  res.status(200).send(room);
+  if (!rooms) {
+    return res
+      .status(404)
+      .send({ message: "Room not found" });
+  }
+
+  const players = rooms.players;
+
+  players.push({
+    name: player,
+    point: "?",
+  });
+
+  const updatedRoom = await prisma.rooms.updateMany({
+    where: {
+      room: roomName,
+    },
+    data: {
+      players: players
+    },
+  })
+
+  res.status(200).send(updatedRoom);
 });
 
 // POST REMOVE PLAYER #TODO = Add to database
