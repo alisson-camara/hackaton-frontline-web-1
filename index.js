@@ -115,10 +115,10 @@ app.post("/join-room", async (req, res) => {
   res.status(200).send(updatedRoom);
 });
 
-// POST REMOVE PLAYER #TODO = Add to database
 app.post("/remove-player", async (req, res) => {
   const roomName = req.query.room;
   const player = req.query.player;
+  const bodyPlayer = req.body
 
   if (!roomName) {
     return res.status(400).send({ message: "Missing required fields: room" });
@@ -126,6 +126,10 @@ app.post("/remove-player", async (req, res) => {
 
   if (!player) {
     return res.status(400).send({ message: "Missing required fields: player" });
+  }
+
+  if (!bodyPlayer) {
+    return res.status(400).send({ message: "Missing required body as player name" });
   }
 
   const room = await prisma.rooms.findFirst({
@@ -158,29 +162,48 @@ app.post("/remove-player", async (req, res) => {
   res.status(200).send(updatedRoom);
 });
 
-app.post("/sendvote", (req, res) => {
+app.post("/sendvote",  async (req, res) => {
   const roomName = req.query.room;
   const player = req.query.player;
+  const point = req.body
 
-  if (!roomName) {
-    return res.status(400).send({ message: "Missing required fields: room" });
+  if (!roomName || !player) {
+    const missingField = !roomName ? 'room' : 'player'
+    return res.status(400).send({ message: `Missing required fields: ${missingField}` });
   }
 
-  if (!player) {
-    return res.status(400).send({ message: "Missing required fields: player" });
+  if (!point) {
+    return res.status(400).send({ message: "Missing required body as point" });
   }
 
-  const room = {
-    name: roomName,
-    currentTask: "Task 1",
-    moderator: "moderator",
-    players: [
-      {
-        name: "player",
-        point: "?",
+  const room = await prisma.rooms.findFirst({
+    where: {
+      room: roomName,
+    },
+  });
+// TODO update player to have the new vote
+  const updatedRoom = await prisma.rooms.updateMany({
+    where: {
+      room: roomName,
+    },
+    data: {
+      players: {
+        point
       },
-    ],
-  };
+    },
+  });
+
+  // const room = {
+  //   name: roomName,
+  //   currentTask: "Task 1",
+  //   moderator: "moderator",
+  //   players: [
+  //     {
+  //       name: "player",
+  //       point: "?",
+  //     },
+  //   ],
+  // };
 
   res.status(200).send(room);
 });
