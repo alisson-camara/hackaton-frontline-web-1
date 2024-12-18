@@ -165,12 +165,12 @@ app.post("/remove-player", async (req, res) => {
 app.post("/sendvote",  async (req, res) => {
   const roomName = req.query.room;
   const player = req.query.player;
-  const point = req.body
+  const point = req.body.point;
 
-  // if (!roomName || !player) {
-  //   const missingField = !roomName ? 'room' : 'player'
-  //   return res.status(400).send({ message: `Missing required fields: ${missingField}` });
-  // }
+  if (!roomName || !player) {
+    const missingField = !roomName ? 'room' : 'player'
+    return res.status(400).send({ message: `Missing required fields: ${missingField}` });
+  }
 
   if (!point) {
     return res.status(400).send({ message: "Missing required body as point" });
@@ -181,27 +181,23 @@ app.post("/sendvote",  async (req, res) => {
       room: roomName,
     },
   });
-  // TODO update player to have the new vote
+
+  // TODO: Update point of body
   await prisma.rooms.updateOne({
     where: {
       room: roomName,
     },
     data: {
-      players: players.map(player => player.name === player && {[player.point]: point }),
+      players: room.room.players.map((player) => {
+        if (player.name === player) {
+          return {
+            ...player,
+            point
+          }
+        }
+      }),
     },
   });
-
-  // const room = {
-  //   name: roomName,
-  //   currentTask: "Task 1",
-  //   moderator: "moderator",
-  //   players: [
-  //     {
-  //       name: "player",
-  //       point: "?",
-  //     },
-  //   ],
-  // };
 
   res.status(200).send(room);
 });
