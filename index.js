@@ -167,10 +167,10 @@ app.post("/sendvote",  async (req, res) => {
   const player = req.query.player;
   const point = req.body
 
-  if (!roomName || !player) {
-    const missingField = !roomName ? 'room' : 'player'
-    return res.status(400).send({ message: `Missing required fields: ${missingField}` });
-  }
+  // if (!roomName || !player) {
+  //   const missingField = !roomName ? 'room' : 'player'
+  //   return res.status(400).send({ message: `Missing required fields: ${missingField}` });
+  // }
 
   if (!point) {
     return res.status(400).send({ message: "Missing required body as point" });
@@ -181,15 +181,13 @@ app.post("/sendvote",  async (req, res) => {
       room: roomName,
     },
   });
-// TODO update player to have the new vote
-  const updatedRoom = await prisma.rooms.updateMany({
+  // TODO update player to have the new vote
+  await prisma.rooms.updateOne({
     where: {
       room: roomName,
     },
     data: {
-      players: {
-        point
-      },
+      players: players.map(player => player.name === player && {[player.point]: point }),
     },
   });
 
