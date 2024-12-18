@@ -180,6 +180,17 @@ app.post("/sendvote",  async (req, res) => {
     where: {
       room: roomName,
     },
+    select:{player}
+  });
+  
+  console.log(room);
+  const playerWithNewVote = room.players.map((player) => {
+    if (player.name === player) {
+      return {
+        ...player,
+        point
+      }
+    }
   });
 
   // TODO: Update point of body
@@ -188,14 +199,7 @@ app.post("/sendvote",  async (req, res) => {
       room: roomName,
     },
     data: {
-      players: room.room.players.map((player) => {
-        if (player.name === player) {
-          return {
-            ...player,
-            point
-          }
-        }
-      }),
+      players: playerWithNewVote,
     },
   });
 

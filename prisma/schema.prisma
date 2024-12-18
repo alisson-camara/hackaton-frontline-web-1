@@ -13,5 +13,10 @@ model rooms {
   moderator String
   room String
   currentTask String
-  players Json
+  players player[]
+}
+
+model player {
+  name String 
+  point String
 }
