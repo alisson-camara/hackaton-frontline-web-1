@@ -6,8 +6,9 @@ const rooms = require('./mocks/rooms.json')
 const router = Router();
 
 router.post("/create-room", (req, res) => {
-  console.log(req.query)
-  res.send(rooms);
+  const data = req.body;
+  console.log("Received data:", data);
+  res.status(200).send({ message: "Data received successfully", data });
 });
 
 
