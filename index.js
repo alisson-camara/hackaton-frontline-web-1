@@ -14,18 +14,21 @@ app.get("/", (req, res) => {
   res.render("pages/index");
 });
 
-// CREATE ROOM
-
+// CREATE ROOM #TODO = Add to database
 app.post("/create-room", (req, res) => {
   const data = req.body;
-  const roomName = req.query.roomName;
+  const roomName = req.query.room;
   const moderator = req.query.moderator;
 
-  if (!roomName) { 
-    return res.status(400).send({ message: "Missing required fields: roomName" });
+  if (!roomName) {
+    return res
+      .status(400)
+      .send({ message: "Missing required fields: roomName" });
   }
-  if (!moderator) { 
-    return res.status(400).send({ message: "Missing required fields: moderator" });
+  if (!moderator) {
+    return res
+      .status(400)
+      .send({ message: "Missing required fields: moderator" });
   }
 
   const room = {
@@ -35,15 +38,39 @@ app.post("/create-room", (req, res) => {
     players: [
       {
         name: moderator,
-        point: "?"
-      }
-    ]
+        point: "?",
+      },
+    ],
   };
 
-  console.log("Received data:", data);
-  res.status(200).send({ message: "Data received successfully", data });
+  res.status(200).send(room);
 });
 
+// GET ROOM #TODO = Add to database
+app.get("/room", (req, res) => {
+  const data = req.body;
+  const roomName = req.query.room;
+
+  if (!roomName) {
+    return res
+      .status(400)
+      .send({ message: "Missing required fields: roomName" });
+  }
+
+  const room = {
+    name: roomName,
+    currentTask: "Task 1",
+    moderator: "moderator",
+    players: [
+      {
+        name: "player",
+        point: "?",
+      },
+    ],
+  };
+
+  res.status(200).send({ room });
+});
 
 const server = app.listen(port, () => {
   console.log(`Listening on ${port}`);
