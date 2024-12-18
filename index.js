@@ -18,6 +18,9 @@ app.listen(port, () => {
   console.log(`Listening on ${port}`)
 })
 
+curl -X POST http://localhost:3000/create-room \
+     -H "Content-Type: application/json" \
+    -d '{}'
 
 
 // process.on('SIGTERM', async () => {
