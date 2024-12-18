@@ -16,6 +16,7 @@ app.get("/", (req, res) => {
   res.render("pages/index");
 });
 
+// POST /create-room
 app.post("/create-room", async (req, res) => {
   const roomName = req.query.room;
   const moderator = req.query.moderator;
@@ -48,6 +49,7 @@ app.post("/create-room", async (req, res) => {
   res.status(200).send(room);
 });
 
+// GET room
 app.get("/room", async (req, res) => {
   const roomName = req.query.room;
 
@@ -64,6 +66,8 @@ app.get("/room", async (req, res) => {
   res.status(200).send(rooms);
 });
 
+
+// POST join-room
 app.post("/join-room", async (req, res) => {
   const roomName = req.query.room;
   const player = req.query.player;
@@ -115,6 +119,7 @@ app.post("/join-room", async (req, res) => {
   res.status(200).send(updatedRoom);
 });
 
+// POST remove-player
 app.post("/remove-player", async (req, res) => {
   const roomName = req.query.room;
   const player = req.query.player;
@@ -164,6 +169,7 @@ app.post("/remove-player", async (req, res) => {
   res.status(200).send(updatedRoom);
 });
 
+// POST sendvode
 app.post("/sendvote", async (req, res) => {
   const roomName = req.query.room;
   const player = req.query.player;
@@ -214,7 +220,7 @@ app.post("/sendvote", async (req, res) => {
   res.status(200).send(newRoom);
 });
 
-// POST RESET VOTES #TODO = Add to database
+// POST reset-votes
 app.post("/reset-votes", async (req, res) => {
   const roomName = req.query.room;
   const player = req.query.player;
@@ -270,28 +276,3 @@ process.on("SIGTERM", async () => {
     });
   }
 });
-
-/*
-const { Client } = require("pg");
-
-const client = new Client({
-  connectionString: process.env.DATABASE_URL,
-  ssl: {
-    rejectUnauthorized: false,
-  },
-});
-
-client.connect();
-
-client.query(
-  "SELECT table_schema,table_name FROM information_schema.tables;",
-  (err, res) => {
-    if (err) throw err;
-    for (let row of res.rows) {
-      console.log(JSON.stringify(row));
-    }
-    client.end();
-  }
-);
-
-*/
